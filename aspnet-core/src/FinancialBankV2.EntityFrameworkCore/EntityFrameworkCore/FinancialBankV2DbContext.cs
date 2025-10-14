@@ -50,6 +50,8 @@ public class FinancialBankV2DbContext :
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
+    public DbSet<BankAccount> BankAccounts { get; set; }
+    public DbSet<Transaction> Transactions { get; set; }
 
     #endregion
 
