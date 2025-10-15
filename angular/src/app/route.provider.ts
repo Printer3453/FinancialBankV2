@@ -9,11 +9,13 @@ function configureRoutes(routesService: RoutesService) {
   return () => {
     routesService.add([
       {
+
         path: '/',
-        name: '::Menu:Home',
-        iconClass: 'fas fa-home',
+        name: 'Hesaplarım',     
+        iconClass: 'fas fa-wallet',
         order: 1,
         layout: eLayoutType.application,
+
       },
     ]);
   };
