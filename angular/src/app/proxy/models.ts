@@ -5,3 +5,8 @@ export interface BankAccountDto extends AuditedEntityDto<string> {
   accountNumber?: string;
   balance: number;
 }
+
+export interface CreateTransactionDto {
+  receiverAccountNumber?: string;
+  amount: number;
+}

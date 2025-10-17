@@ -1,0 +1,50 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Para Transferi</h3>
+  </div>
+  <div class="card-body">
+    <form #transferForm="ngForm" (ngSubmit)="submitForm()">
+      <div class="mb-3">
+        <label for="receiverAccount" class="form-label">Alıcı Hesap Numarası</label>
+        <input
+          type="text"
+          class="form-control"
+          id="receiverAccount"
+          name="receiverAccount"
+          [(ngModel)]="receiverAccountNumber"
+          required
+          placeholder="Örn: ALICI_HESAP_1"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label for="amount" class="form-label">Miktar</label>
+        <div class="input-group">
+          <input
+            type="number"
+            class="form-control"
+            id="amount"
+            name="amount"
+            [(ngModel)]="amount"
+            required
+            min="1"
+            placeholder="0"
+          />
+          <span class="input-group-text">₺</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="!transferForm.valid">
+        Transfer Yap
+      </button>
+    </form>
+
+    <div *ngIf="isSuccess" class="alert alert-success mt-3" role="alert">
+      Para transferi başarıyla tamamlandı!
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger mt-3" role="alert">
+      <strong>Hata:</strong> {{ error }}
+    </div>
+  </div>
+</div>

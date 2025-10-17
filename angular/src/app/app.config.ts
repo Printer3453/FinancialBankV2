@@ -2,7 +2,7 @@ import { provideSideMenuLayout } from '@abp/ng.theme.lepton-x/layouts';
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { appRoutes } from './app.routes';
+import { appRoutes } from './app.routes'; 
 import { APP_ROUTE_PROVIDER } from './route.provider';
 import { provideAbpCore, withOptions } from '@abp/ng.core';
 import { environment } from '../environments/environment';
@@ -18,24 +18,36 @@ import { ThemeLeptonXModule } from '@abp/ng.theme.lepton-x';
 import { SideMenuLayoutModule } from '@abp/ng.theme.lepton-x/layouts';
 import { AccountLayoutModule } from '@abp/ng.theme.lepton-x/account';
 import { ThemeSharedModule, withHttpErrorConfig, withValidationBluePrint, provideAbpThemeShared } from '@abp/ng.theme.shared';
+
+
+import { FormsModule } from '@angular/forms';
+
 export const appConfig: ApplicationConfig = {
     providers: [
-    provideRouter(appRoutes),
-    APP_ROUTE_PROVIDER,
-    provideAbpCore(withOptions({
-        environment,
-        registerLocaleFn: registerLocale(),
-    })),
-    provideSideMenuLayout(),
-    provideAbpOAuth(),
-    provideSettingManagementConfig(),
-    provideAccountConfig(),
-    provideIdentityConfig(),
-    provideTenantManagementConfig(),
-    provideFeatureManagementConfig(),
-    provideAnimations(),
-    provideLogo(withEnvironmentOptions(environment)), importProvidersFrom(ThemeLeptonXModule.forRoot(), SideMenuLayoutModule.forRoot(), AccountLayoutModule.forRoot(), ThemeSharedModule), provideAbpThemeShared(withValidationBluePrint({
-        wrongPassword: 'Please choose 1q2w3E*'
-    }))
-],
+        provideRouter(appRoutes),
+        APP_ROUTE_PROVIDER,
+        provideAbpCore(withOptions({
+            environment,
+            registerLocaleFn: registerLocale(),
+        })),
+        provideSideMenuLayout(),
+        provideAbpOAuth(),
+        provideSettingManagementConfig(),
+        provideAccountConfig(),
+        provideIdentityConfig(),
+        provideTenantManagementConfig(),
+        provideFeatureManagementConfig(),
+        provideAnimations(),
+        provideLogo(withEnvironmentOptions(environment)),
+        importProvidersFrom(
+            FormsModule,
+            ThemeLeptonXModule.forRoot(),
+            SideMenuLayoutModule.forRoot(),
+            AccountLayoutModule.forRoot(),
+            ThemeSharedModule
+        ),
+        provideAbpThemeShared(withValidationBluePrint({
+            wrongPassword: 'Please choose 1q2w3E*'
+        }))
+    ],
 };
