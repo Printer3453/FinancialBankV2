@@ -1,1 +1,24 @@
-<p>accounts-dashboard works!</p>
+<div class="card">
+  <div class="card-header">
+    <h3>Hesaplarım</h3>
+  </div>
+  <div class="card-body">
+    
+    <p *ngIf="!accounts || accounts.length === 0">Görüntülenecek banka hesabınız bulunmamaktadır.</p>
+
+    <table class="table" *ngIf="accounts && accounts.length > 0">
+      <thead>
+        <tr>
+          <th>Hesap Numarası</th>
+          <th>Bakiye</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let account of accounts">
+          <td>{{ account.accountNumber }}</td>
+          <td>{{ account.balance | number:'1.2-2' }} ₺</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

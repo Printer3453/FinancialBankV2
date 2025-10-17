@@ -17,6 +17,13 @@ function configureRoutes(routesService: RoutesService) {
         layout: eLayoutType.application,
 
       },
+      { 
+    path: '/money-transfer',
+    name: 'Para Transferi',
+    iconClass: 'fas fa-exchange-alt',
+    order: 2,
+    layout: eLayoutType.application,
+  },
     ]);
   };
 }

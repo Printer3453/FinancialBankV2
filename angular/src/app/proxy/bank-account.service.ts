@@ -1,4 +1,4 @@
-import type { BankAccountDto } from './models';
+import type { BankAccountDto, CreateTransactionDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
@@ -7,6 +7,15 @@ import { Injectable } from '@angular/core';
 })
 export class BankAccountService {
   apiName = 'Default';
+  
+
+  createTransaction = (input: CreateTransactionDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/bank-account/transaction',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
   
 
   getMyAccounts = (config?: Partial<Rest.Config>) =>
