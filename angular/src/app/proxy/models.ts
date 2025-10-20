@@ -1,5 +1,13 @@
 import type { AuditedEntityDto } from '@abp/ng.core';
 
+export interface AiAnswerDto {
+  answer?: string;
+}
+
+export interface AskQuestionDto {
+  question?: string;
+}
+
 export interface BankAccountDto extends AuditedEntityDto<string> {
   userId?: string;
   accountNumber?: string;

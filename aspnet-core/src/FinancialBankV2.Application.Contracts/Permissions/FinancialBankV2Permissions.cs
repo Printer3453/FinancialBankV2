@@ -1,9 +1,12 @@
-﻿namespace FinancialBankV2.Permissions;
-
-public static class FinancialBankV2Permissions
+﻿namespace FinancialBankV2.Permissions
 {
-    public const string GroupName = "FinancialBankV2";
+    public static class FinancialBankV2Permissions
+    {
+        public const string GroupName = "FinancialBankV2";
 
-    //Add your own permission names. Example:
-    //public const string MyPermission1 = GroupName + ".MyPermission1";
+        public static class Ai
+        {
+            public const string Default = GroupName + ".AiService";
+        }
+    }
 }

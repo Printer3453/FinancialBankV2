@@ -873,6 +873,78 @@
       "rootPath": "app",
       "remoteServiceName": "Default",
       "controllers": {
+        "FinancialBankV2.AiAppService": {
+          "controllerName": "Ai",
+          "controllerGroupName": "Ai",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "FinancialBankV2.AiAppService",
+          "interfaces": [
+            {
+              "type": "FinancialBankV2.IAiAppService",
+              "name": "IAiAppService",
+              "methods": [
+                {
+                  "name": "AskQuestionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "FinancialBankV2.AskQuestionDto, FinancialBankV2.Application.Contracts",
+                      "type": "FinancialBankV2.AskQuestionDto",
+                      "typeSimple": "FinancialBankV2.AskQuestionDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "FinancialBankV2.AiAnswerDto",
+                    "typeSimple": "FinancialBankV2.AiAnswerDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "AskQuestionAsyncByInput": {
+              "uniqueName": "AskQuestionAsyncByInput",
+              "name": "AskQuestionAsync",
+              "httpMethod": "POST",
+              "url": "api/app/ai/ask-question",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "FinancialBankV2.AskQuestionDto, FinancialBankV2.Application.Contracts",
+                  "type": "FinancialBankV2.AskQuestionDto",
+                  "typeSimple": "FinancialBankV2.AskQuestionDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "FinancialBankV2.AskQuestionDto",
+                  "typeSimple": "FinancialBankV2.AskQuestionDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "FinancialBankV2.AiAnswerDto",
+                "typeSimple": "FinancialBankV2.AiAnswerDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "FinancialBankV2.IAiAppService"
+            }
+          }
+        },
         "FinancialBankV2.BankAccountAppService": {
           "controllerName": "BankAccount",
           "controllerGroupName": "BankAccount",
@@ -3723,6 +3795,48 @@
     }
   },
   "types": {
+    "FinancialBankV2.AiAnswerDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Answer",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "FinancialBankV2.AskQuestionDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Question",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "FinancialBankV2.BankAccountDto": {
       "baseType": "Volo.Abp.Application.Dtos.AuditedEntityDto<System.Guid>",
       "isEnum": false,
