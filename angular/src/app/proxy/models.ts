@@ -18,3 +18,10 @@ export interface CreateTransactionDto {
   receiverAccountNumber?: string;
   amount: number;
 }
+
+export interface TransactionDetailDto {
+  senderAccountNumber?: string;
+  receiverAccountNumber?: string;
+  amount: number;
+  transactionDate?: string;
+}

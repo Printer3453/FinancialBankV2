@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
-// Gerekli servis ve DTO'ları import ediyoruz (daha önce yaptığımız gibi direkt yoldan)
+// Gerekli servis ve DTO'ları import ediyoruz 
 import { BankAccountService } from '../../proxy/bank-account.service';
 import { CreateTransactionDto } from '../../proxy/models';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-money-transfer',
@@ -20,8 +21,12 @@ export class MoneyTransferComponent {
   isSuccess: boolean = false;
   error: string | null = null;
 
-  // Backend servisimizi constructor'da inject ediyoruz
-  constructor(private bankAccountService: BankAccountService) {}
+  // 1. Backend servisimizi constructor'da inject ediyoruz
+  // 2. Constructor'a Router'ı enjekte ediyoruz
+  constructor(
+    private bankAccountService: BankAccountService,
+    private router: Router
+  ) { }
 
   // Form gönderildiğinde bu metot çalışacak
   submitForm(): void {
@@ -42,19 +47,19 @@ export class MoneyTransferComponent {
 
     // Backend'deki CreateTransactionAsync metodunu çağır
     this.bankAccountService.createTransaction(transactionDto).subscribe(
-      () => {
-        // Başarılı olursa...
-        this.isSuccess = true;
-        console.log('Transfer başarılı!');
-        // Formu temizleyebiliriz
-        this.receiverAccountNumber = '';
-        this.amount = null;
+      (transactionId: string) => {
+        // Başarılı olursa tek yapmamız gereken,
+        // kullanıcıyı işlem ID'si ile birlikte dekont sayfasına yönlendirmek.
+        console.log('Transfer başarılı! İşlem ID:', transactionId);
+        this.router.navigate(['/receipt', transactionId.replace(/"/g, '')]);
       },
       errorResponse => {
-        // Hata olursa...
+        // Hata olursa, BU SAYFADA kalıp hatayı gösteriyoruz.
+        this.isSuccess = false; // Başarı durumunu sıfırla
         this.error = errorResponse.error?.error?.message || 'Bilinmeyen bir hata oluştu.';
         console.error('Transfer hatası:', errorResponse);
       }
     );
   }
+
 }

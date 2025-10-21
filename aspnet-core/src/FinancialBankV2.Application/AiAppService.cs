@@ -23,7 +23,7 @@ namespace FinancialBankV2
         private readonly IConfiguration _configuration;
         private readonly IRepository<BankAccount, Guid> _bankAccountRepository;
         private readonly ICurrentUser _currentUser;
-        private readonly IUnitOfWorkManager _unitOfWorkManager; // <-- YENİ
+        private readonly IUnitOfWorkManager _unitOfWorkManager; 
         //IUnitOfWorkManager ne yapar?
         //IUnitOfWorkManager, birim çalışması (Unit of Work) desenini yönetmek için kullanılan bir hizmettir.
         //Birim çalışması deseni, bir işlem (transaction) kapsamında birden fazla veri erişim operasyonunu tek bir birim olarak ele almayı sağlar.
@@ -35,12 +35,12 @@ namespace FinancialBankV2
             IConfiguration configuration,
             IRepository<BankAccount, Guid> bankAccountRepository,
             ICurrentUser currentUser,
-            IUnitOfWorkManager unitOfWorkManager) // <-- YENİ
+            IUnitOfWorkManager unitOfWorkManager) 
         {
             _configuration = configuration;
             _bankAccountRepository = bankAccountRepository;
             _currentUser = currentUser;
-            _unitOfWorkManager = unitOfWorkManager; // <-- YENİ
+            _unitOfWorkManager = unitOfWorkManager; 
         }
 
         public async Task<AiAnswerDto> AskQuestionAsync(AskQuestionDto input)

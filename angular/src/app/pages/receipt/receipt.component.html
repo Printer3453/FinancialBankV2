@@ -1,0 +1,33 @@
+<div class="card" *ngIf="transaction">
+  <div class="card-header bg-success text-white">
+    <h3><i class="fas fa-check-circle me-2"></i>İşlem Başarılı</h3>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Para Transferi Dekontu</h5>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <strong>Gönderen Hesap:</strong>
+        <span>{{ transaction.senderAccountNumber }}</span>
+      </li>
+      <li class="list-group-item">
+        <strong>Alıcı Hesap:</strong>
+        <span>{{ transaction.receiverAccountNumber }}</span>
+      </li>
+      <li class="list-group-item">
+        <strong>Tutar:</strong>
+        <span class="fw-bold fs-5 text-success">{{ transaction.amount | number:'1.2-2' }} ₺</span>
+      </li>
+      <li class="list-group-item">
+        <strong>İşlem Tarihi:</strong>
+        <span>{{ transaction.transactionDate | date:'dd.MM.yyyy HH:mm:ss' }}</span>
+      </li>
+    </ul>
+  </div>
+  <div class="card-footer text-muted">
+    Bu dekont, FinancialBankV2 tarafından oluşturulmuştur.
+  </div>
+</div>
+
+<div *ngIf="!transaction">
+  <p>Dekont bilgileri yükleniyor...</p>
+</div>
