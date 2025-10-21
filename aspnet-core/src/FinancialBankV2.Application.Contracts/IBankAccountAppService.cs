@@ -9,6 +9,7 @@ namespace FinancialBankV2
     {
         Task<List<BankAccountDto>> GetMyAccountsAsync();
 
-        Task CreateTransactionAsync(CreateTransactionDto input);
+        Task<Guid> CreateTransactionAsync(CreateTransactionDto input);
+        Task<TransactionDetailDto> GetTransactionByIdAsync(Guid id);
     }
 }

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AccountsDashboardComponent } from './pages/accounts-dashboard/accounts-dashboard.component';
-import { MoneyTransferComponent } from './pages/money-transfer/money-transfer.component'; // YENİ
+import { MoneyTransferComponent } from './pages/money-transfer/money-transfer.component'; 
+import { ReceiptComponent } from './pages/receipt/receipt.component';
 
 export const appRoutes: Routes = [
   {
@@ -8,9 +9,13 @@ export const appRoutes: Routes = [
     component: AccountsDashboardComponent,
     pathMatch: 'full',
   },
-  { // YENİ EKLEDİĞİMİZ YOL
+  { 
     path: 'money-transfer',
     component: MoneyTransferComponent,
+  },
+  { 
+    path: 'receipt/:id',
+    component: ReceiptComponent,
   },
   {
     path: '',
