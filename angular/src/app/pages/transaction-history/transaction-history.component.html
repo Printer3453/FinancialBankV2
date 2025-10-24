@@ -1,0 +1,61 @@
+<div class="card">
+  <div class="card-header">
+    <h3>İşlem Geçmişi</h3>
+  </div>
+  <div class="card-body">
+    <p *ngIf="transactions.totalCount === 0">Görüntülenecek bir işlem bulunmamaktadır.</p>
+
+   <table class="table table-striped align-middle" *ngIf="transactions.totalCount > 0">
+  <thead>
+    <tr>
+      <th>Tarih</th>
+      <th>Açıklama</th>
+      <th>Tip</th>
+      <th class="text-end">Tutar</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let transaction of transactions.items">
+      <td>{{ transaction.transactionDate | date:'dd.MM.yyyy HH:mm' }}</td>
+      <td>{{ transaction.description }}</td>
+      <td>
+        <span class="d-flex align-items-center">
+          <i
+            class="fas me-2"
+            [ngClass]="transaction.type === 'Gelen' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger'"
+          ></i>
+          <span>{{ transaction.type }}</span>
+        </span>
+      </td>
+      <td
+        class="text-end fw-bold"
+        [ngClass]="transaction.type === 'Gelen' ? 'text-success' : 'text-danger'"
+      >
+        {{ transaction.amount | number:'1.2-2' }} ₺
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    <div *ngIf="transactions.totalCount > list.maxResultCount" class="d-flex justify-content-end mt-3">
+      <div class="btn-group" role="group">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="list.page === 0"
+          (click)="list.page = list.page - 1"
+        >
+          « Önceki
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="(list.page + 1) * list.maxResultCount >= transactions.totalCount"
+          (click)="list.page = list.page + 1"
+        >
+          Sonraki »
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

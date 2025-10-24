@@ -1,65 +1,71 @@
-import { Component } from '@angular/core';
-// Gerekli servis ve DTO'ları import ediyoruz 
-import { BankAccountService } from '../../proxy/bank-account.service';
-import { CreateTransactionDto } from '../../proxy/models';
-import { FormsModule } from '@angular/forms';
+// Gerekli import'ları en üste ekliyoruz
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { BankAccountService } from '../../proxy/bank-account.service';
+import { CreateTransactionDto, BankAccountDto } from '../../proxy/models';
 
 @Component({
   selector: 'app-money-transfer',
-  standalone: true,
-  imports: [FormsModule],
   templateUrl: './money-transfer.component.html',
   styleUrls: ['./money-transfer.component.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
 })
-export class MoneyTransferComponent {
-  // HTML'deki form alanlarına bağlanacak değişkenler
+export class MoneyTransferComponent implements OnInit {
+  // 1. @ViewChild ile HTML'deki #transferForm referansını yakalıyoruz
+  @ViewChild('transferForm') transferForm!: NgForm;
+
   receiverAccountNumber: string = '';
   amount: number | null = null;
+  
+  senderAccount: BankAccountDto | null = null;
+  isLoading: boolean = false;
 
-  // Başarı ve Hata durumlarını kontrol edecek değişkenler
-  isSuccess: boolean = false;
-  error: string | null = null;
-
-  // 1. Backend servisimizi constructor'da inject ediyoruz
-  // 2. Constructor'a Router'ı enjekte ediyoruz
   constructor(
     private bankAccountService: BankAccountService,
-    private router: Router
-  ) { }
+    private router: Router,
+    private toastr: ToastrService
+  ) {}
 
-  // Form gönderildiğinde bu metot çalışacak
-  submitForm(): void {
-    // Her denemede eski mesajları temizle
-    this.isSuccess = false;
-    this.error = null;
-
-    if (!this.receiverAccountNumber || !this.amount || this.amount <= 0) {
-      this.error = 'Lütfen tüm alanları doğru bir şekilde doldurun.';
-      return;
-    }
-
-    // DTO'yu formdaki verilerle oluştur
-    const transactionDto: CreateTransactionDto = {
-      receiverAccountNumber: this.receiverAccountNumber,
-      amount: this.amount,
-    };
-
-    // Backend'deki CreateTransactionAsync metodunu çağır
-    this.bankAccountService.createTransaction(transactionDto).subscribe(
-      (transactionId: string) => {
-        // Başarılı olursa tek yapmamız gereken,
-        // kullanıcıyı işlem ID'si ile birlikte dekont sayfasına yönlendirmek.
-        console.log('Transfer başarılı! İşlem ID:', transactionId);
-        this.router.navigate(['/receipt', transactionId.replace(/"/g, '')]);
-      },
-      errorResponse => {
-        // Hata olursa, BU SAYFADA kalıp hatayı gösteriyoruz.
-        this.isSuccess = false; // Başarı durumunu sıfırla
-        this.error = errorResponse.error?.error?.message || 'Bilinmeyen bir hata oluştu.';
-        console.error('Transfer hatası:', errorResponse);
+  ngOnInit(): void {
+    this.bankAccountService.getMyAccounts().subscribe(accounts => {
+      if (accounts && accounts.length > 0) {
+        this.senderAccount = accounts[0];
       }
-    );
+    });
   }
 
+  submitForm(): void {
+    // 2. Artık 'this.transferForm' burada tanınıyor olacak
+    if (!this.transferForm.valid || this.isLoading) return;
+    
+    this.isLoading = true;
+
+    const transactionDto: CreateTransactionDto = {
+      receiverAccountNumber: this.receiverAccountNumber,
+      amount: this.amount!, // amount'ın null olmayacağından emin olduğumuz için '!' ekleyebiliriz
+    };
+
+    this.bankAccountService.createTransaction(transactionDto).subscribe({
+      next: (transactionId: string) => {
+        this.toastr.success('Para transferi dekont sayfasına yönlendiriliyor...', 'Başarılı!');
+        this.isLoading = false;
+        
+        this.bankAccountService.getMyAccounts().subscribe();
+
+        setTimeout(() => {
+          this.router.navigate(['/receipt', transactionId.replace(/"/g, '')]);
+        }, 1500);
+      },
+      error: errorResponse => {
+        const errorMessage = errorResponse.error?.error?.message || 'Bilinmeyen bir hata oluştu.';
+        this.toastr.error(errorMessage, 'Hata!');
+        this.isLoading = false;
+      }
+    });
+  }
 }

@@ -11,19 +11,26 @@ function configureRoutes(routesService: RoutesService) {
       {
 
         path: '/',
-        name: 'Hesaplarım',     
+        name: 'Hesaplarım',
         iconClass: 'fas fa-wallet',
         order: 1,
         layout: eLayoutType.application,
 
       },
-      { 
-    path: '/money-transfer',
-    name: 'Para Transferi',
-    iconClass: 'fas fa-exchange-alt',
-    order: 2,
-    layout: eLayoutType.application,
-  },
+      {
+        path: '/money-transfer',
+        name: 'Para Transferi',
+        iconClass: 'fas fa-exchange-alt',
+        order: 2,
+        layout: eLayoutType.application,
+      },
+      {
+        path: '/history',
+        name: 'İşlem Geçmişi',
+        iconClass: 'fas fa-history',
+        order: 3,
+        layout: eLayoutType.application,
+      },
     ]);
   };
 }

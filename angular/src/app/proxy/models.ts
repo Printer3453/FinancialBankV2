@@ -25,3 +25,10 @@ export interface TransactionDetailDto {
   amount: number;
   transactionDate?: string;
 }
+
+export interface TransactionHistoryDto {
+  transactionDate?: string;
+  description?: string;
+  amount: number;
+  type?: string;
+}

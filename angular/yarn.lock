@@ -6073,6 +6073,13 @@ ng-zorro-antd@~20.0.0:
     date-fns "^2.16.1"
     tslib "^2.3.0"
 
+ngx-toastr@^19.1.0:
+  version "19.1.0"
+  resolved "https://registry.yarnpkg.com/ngx-toastr/-/ngx-toastr-19.1.0.tgz#c3a676e2b7c2e186e192e75ef272b4caaa778417"
+  integrity sha512-Qa7Kg7QzGKNtp1v04hu3poPKKx8BGBD/Onkhm6CdH5F0vSMdq+BdR/f8DTpZnGFksW891tAFufpiWb9UZX+3vg==
+  dependencies:
+    tslib "^2.3.0"
+
 node-addon-api@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-6.1.0.tgz#ac8470034e58e67d0c6f1204a18ae6995d9c0d76"

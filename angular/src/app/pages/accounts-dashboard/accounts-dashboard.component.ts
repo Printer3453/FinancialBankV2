@@ -17,6 +17,7 @@ export class AccountsDashboardComponent implements OnInit {
   accounts: BankAccountDto[] = [];
   userQuestion: string = '';
   aiAnswer: string | null = null;
+  public isChatOpen = false;
 
   constructor(
     private bankAccountService: BankAccountService,
@@ -28,7 +29,9 @@ export class AccountsDashboardComponent implements OnInit {
       this.accounts = result;
     });
   } 
-
+toggleChat(): void {
+    this.isChatOpen = !this.isChatOpen;
+}
 
   askAi(): void {
     if (!this.userQuestion) return;

@@ -18,6 +18,8 @@ import { ThemeLeptonXModule } from '@abp/ng.theme.lepton-x';
 import { SideMenuLayoutModule } from '@abp/ng.theme.lepton-x/layouts';
 import { AccountLayoutModule } from '@abp/ng.theme.lepton-x/account';
 import { ThemeSharedModule, withHttpErrorConfig, withValidationBluePrint, provideAbpThemeShared } from '@abp/ng.theme.shared';
+import { provideToastr } from 'ngx-toastr';
+
 
 
 import { FormsModule } from '@angular/forms';
@@ -30,6 +32,7 @@ export const appConfig: ApplicationConfig = {
             environment,
             registerLocaleFn: registerLocale(),
         })),
+        provideToastr(),
         provideSideMenuLayout(),
         provideAbpOAuth(),
         provideSettingManagementConfig(),

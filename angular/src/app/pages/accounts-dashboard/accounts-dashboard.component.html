@@ -1,42 +1,57 @@
 <div class="card">
   <div class="card-header">
-    <h3>Hesaplarım</h3>
+    <h3><i class="fas fa-wallet me-2"></i>Hesaplarım</h3>
   </div>
-  <div class="card-body">
+</div>
 
+
+  <div class="card-body">
     <p *ngIf="!accounts || accounts.length === 0">Görüntülenecek banka hesabınız bulunmamaktadır.</p>
 
-    <table class="table" *ngIf="accounts && accounts.length > 0">
-      <thead>
-        <tr>
-          <th>Hesap Numarası</th>
-          <th>Bakiye</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let account of accounts">
-          <td>{{ account.accountNumber }}</td>
-          <td>{{ account.balance | number:'1.2-2' }} ₺</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <hr class="my-4" />
-
-  <div class="ai-assistant">
-    <h5><i class="fas fa-robot me-2"></i>Yapay Zeka Asistanı</h5>
-    <p class="text-muted">Bana bakiye ile ilgili bir soru sor.</p>
-
-    <div class="input-group mb-3">
-      <input type="text" class="form-control" placeholder="Örn: Toplam param ne kadar?" [(ngModel)]="userQuestion"
-        (keyup.enter)="askAi()" />
-      <button class="btn btn-outline-secondary" type="button" (click)="askAi()">
-        Sor
-      </button>
+    <div class="row" *ngIf="accounts && accounts.length > 0">
+      <div class="col-lg-6 mb-4" *ngFor="let account of accounts">
+        <div class="card account-card">
+          <div class="card-body">
+            <h5 class="card-title text-muted">HESAP NUMARASI</h5>
+            <p class="card-text account-number">{{ account.accountNumber }}</p>
+            <hr />
+            <h5 class="card-title text-muted">GÜNCEL BAKİYE</h5>
+            <p class="card-text balance">
+              {{ account.balance | number:'1.2-2' }} ₺
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
 
+
+
+
+  </div>
+
+  
+<div class="chat-window" [ngClass]="{ 'open': isChatOpen }">
+  <div class="chat-header">
+    <h5>Yapay Zeka Asistanı</h5>
+    <button type="button" class="btn-close" (click)="toggleChat()"></button>
+  </div>
+  <div class="chat-body">
     <div *ngIf="aiAnswer" class="alert alert-info">
       {{ aiAnswer }}
     </div>
+    <p *ngIf="!aiAnswer" class="text-muted">Bana bakiye ile ilgili bir soru sorabilirsiniz.</p>
+  </div>
+  <div class="chat-input">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Sorunuzu yazın..." [(ngModel)]="userQuestion"
+        (keyup.enter)="askAi()" />
+      <button class="btn btn-primary" type="button" (click)="askAi()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
   </div>
 </div>
+
+<button class="chat-fab" (click)="toggleChat()">
+  <i class="fas fa-robot"></i>
+</button>
