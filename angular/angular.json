@@ -110,10 +110,14 @@
                 "inject": true,
                 "bundleName": "ngx-datatable-material"
               },
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/ngx-toastr/toastr.css"
             ],
             "scripts": []
           },
+
+
+
           "configurations": {
             "production": {
               "budgets": [

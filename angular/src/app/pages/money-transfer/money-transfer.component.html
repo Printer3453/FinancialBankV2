@@ -3,6 +3,15 @@
     <h3>Para Transferi</h3>
   </div>
   <div class="card-body">
+
+    <div *ngIf="senderAccount" class="mb-4 p-3 rounded" style="background-color: #f8f9fa;">
+      <h5 class="text-muted">Gönderen Hesap</h5>
+      <div class="d-flex justify-content-between align-items-center">
+        <span>{{ senderAccount.accountNumber }}</span>
+        <span class="fs-4 fw-bold">{{ senderAccount.balance | number:'1.2-2' }} ₺</span>
+      </div>
+    </div>
+
     <form #transferForm="ngForm" (ngSubmit)="submitForm()">
       <div class="mb-3">
         <label for="receiverAccount" class="form-label">Alıcı Hesap Numarası</label>
@@ -34,17 +43,12 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary" [disabled]="!transferForm.valid">
-        Transfer Yap
+      <button type="submit" class="btn btn-primary" [disabled]="!transferForm.valid || isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        <span *ngIf="isLoading">Gönderiliyor...</span>
+        <span *ngIf="!isLoading">Transfer Yap</span>
       </button>
     </form>
 
-    <div *ngIf="isSuccess" class="alert alert-success mt-3" role="alert">
-      Para transferi başarıyla tamamlandı!
-    </div>
-
-    <div *ngIf="error" class="alert alert-danger mt-3" role="alert">
-      <strong>Hata:</strong> {{ error }}
-    </div>
   </div>
 </div>

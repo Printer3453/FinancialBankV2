@@ -6,6 +6,10 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using Volo.Abp.Uow;
+using Volo.Abp.Application.Dtos;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
+using System.Linq;
 
 namespace FinancialBankV2
 {
@@ -103,6 +107,51 @@ namespace FinancialBankV2
             }
         }
 
+        public async Task<PagedResultDto<TransactionHistoryDto>> GetTransactionHistoryAsync(PagedAndSortedResultRequestDto input)
+        {
+            var userAccount = await _bankAccountRepository.FirstOrDefaultAsync(x => x.UserId == _currentUser.Id.Value);
+            if (userAccount == null)
+            {
+                return new PagedResultDto<TransactionHistoryDto>(0, new List<TransactionHistoryDto>());
+            }
 
+            // 1. Önce sorgulanabilir nesneleri al (await ile)
+            var transactionQueryable = await _transactionRepository.GetQueryableAsync();
+            var accountQueryable = await _bankAccountRepository.GetQueryableAsync();
+
+            // 2. LINQ sorgusunu bu nesneler üzerinde kur (içinde await YOK)
+            var query = from transaction in transactionQueryable
+                        where transaction.SenderAccountId == userAccount.Id || transaction.ReceiverAccountId == userAccount.Id
+                        join sender in accountQueryable on transaction.SenderAccountId equals sender.Id
+                        join receiver in accountQueryable on transaction.ReceiverAccountId equals receiver.Id
+                        // Sıralamayı veritabanında yapmak için orderby ekliyoruz
+                        orderby transaction.CreationTime descending
+                        select new TransactionHistoryDto
+                        {
+                            TransactionDate = transaction.TransactionDate,
+                            Amount = transaction.Amount,
+                            Type = transaction.SenderAccountId == userAccount.Id ? "Giden" : "Gelen",
+                            Description = transaction.SenderAccountId == userAccount.Id
+                                ? $"{receiver.AccountNumber} hesabına gönderildi"
+                                : $"{sender.AccountNumber} hesabından geldi"
+                        };
+
+            // 3. Toplam sayıyı al (sayfalama için)
+            var totalCount = await AsyncExecuter.CountAsync(query);
+
+            // 4. Sorguyu sayfalara böl ve sonucu listeye çevir (await ile)
+            var result = await AsyncExecuter.ToListAsync(
+                query.PageBy(input)
+            );
+
+            return new PagedResultDto<TransactionHistoryDto>(totalCount, result);
+        }
     }
 }
+
+
+
+
+
+
+
