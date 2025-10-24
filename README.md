@@ -1,17 +1,17 @@
-# FinancialBankV2 - Mini Bankacılık Portalı
+# FinancialBankV2 - Full-Stack Mini Bankacılık Portalı
 
-Bu proje, ABP Framework ve Angular kullanılarak geliştirilmiş bir Full-Stack mini bankacılık uygulamasıdır. 
-Uygulama, temel bankacılık özelliklerini (hesap görüntüleme, para transferi) içermekte ve 
- .NET teknolojileri üzerine kurulmuştur.
+Bu proje, modern .NET teknolojileri ve Angular kullanılarak geliştirilmiş, kişisel bir Full-Stack mini bankacılık uygulamasıdır. Uygulama, temel bankacılık özelliklerini, yapay zeka entegrasyonunu ve katmanlı mimari prensiplerini sergilemek amacıyla oluşturulmuştur.
 
-## Temel Özellikler
+## ✨ Temel Özellikler
 
 - **Kullanıcı Yönetimi:** ABP Framework'ün sunduğu hazır kimlik yönetimi modülü ile güvenli kullanıcı girişi ve kaydı.
 - **Hesap Paneli:** Giriş yapan kullanıcıların kendilerine ait banka hesaplarını ve güncel bakiyelerini görüntülemesi.
 - **Para Transferi:** Kullanıcıların, sistemdeki başka bir hesaba hesap numarasını kullanarak para transferi yapabilmesi.
 - **İşlem Geçmişi:** Yapılan tüm transferlerin veritabanında bir `Transaction` kaydı olarak saklanması.
+- **Yapay Zeka Asistanı:** OpenAI API entegrasyonu ile, kullanıcıların hesap bakiyeleri hakkında doğal dilde sorular sorabilmesi.
+- **İşlem Dekontu:** Başarılı her para transferi sonrası, işlem detaylarını (gönderen, alıcı, tutar, tarih) gösteren dinamik bir dekont sayfası.
 
-## Kullanılan Teknolojiler
+## 🛠️ Kullanılan Teknolojiler
 
 ### Backend
 - **Framework:** ABP Framework v9.3.5, ASP.NET Core
@@ -19,6 +19,7 @@ Uygulama, temel bankacılık özelliklerini (hesap görüntüleme, para transfer
 - **API:** RESTful API
 - **ORM:** Entity Framework Core
 - **Veritabanı:** Microsoft SQL Server
+- **Harici API:** OpenAI API
 - **Diğer:** AutoMapper, Dependency Injection, Unit of Work
 
 ### Frontend
@@ -26,7 +27,7 @@ Uygulama, temel bankacılık özelliklerini (hesap görüntüleme, para transfer
 - **UI Kütüphanesi:** Bootstrap, FontAwesome
 - **Dil:** TypeScript
 
-## Projeyi Çalıştırma
+## 🚀 Projeyi Çalıştırma
 
 Projeyi yerel makinede çalıştırmak için aşağıdaki adımlar izlenmelidir:
 
@@ -41,7 +42,7 @@ Projeyi yerel makinede çalıştırmak için aşağıdaki adımlar izlenmelidir:
     - `angular` klasörüne gidin ve `yarn` komutuyla paketleri yükleyin.
     - `ng serve` komutuyla frontend sunucusunu başlatın. Uygulama `http://localhost:4200` adresinde çalışmaya başlayacaktır.
 
-## Standart Kullanıcı Bilgileri
+## 🔑 Standart Kullanıcı Bilgileri
 
 Uygulamayı test etmek için aşağıdaki standart admin kullanıcısıyla giriş yapabilirsiniz:
 - **Kullanıcı Adı:** `admin`
