@@ -64,7 +64,7 @@ export class MoneyTransferComponent implements OnInit {
       error: errorResponse => {
         const errorMessage = errorResponse.error?.error?.message || 'Bilinmeyen bir hata oluştu.';
         this.toastr.error(errorMessage, 'Hata!');
-        this.isLoading = true;
+        this.isLoading = false;
       }
     });
   }
