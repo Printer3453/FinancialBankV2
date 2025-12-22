@@ -47,7 +47,16 @@ Projeyi yerel makinede çalıştırmak için aşağıdaki adımlar izlenmelidir:
 Uygulamayı test etmek için aşağıdaki standart admin kullanıcısıyla giriş yapabilirsiniz:
 - **Kullanıcı Adı:** `admin`
 - **Şifre:** `1q2w3E*`
-
 ---
 
 *Bu proje, Ömer Faruk YAZICI tarafından geliştirilmiştir.*
+
+<img width="1600" height="796" alt="image" src="https://github.com/user-attachments/assets/78f42b71-7319-4773-9735-ff1613a7b89e" />
+<img width="1600" height="820" alt="image" src="https://github.com/user-attachments/assets/2c6b7f6c-503d-49fc-a236-e661e28949d1" />
+<img width="1600" height="712" alt="image" src="https://github.com/user-attachments/assets/f1865308-0603-4f42-b359-fb31538e0678" />
+<img width="1600" height="758" alt="image" src="https://github.com/user-attachments/assets/3df49695-d3c5-448d-be8f-0166bda3a316" />
+<img width="1600" height="756" alt="image" src="https://github.com/user-attachments/assets/5ffbfafe-3847-42c0-8a24-eb66405ebc8b" />
+
+
+
+
