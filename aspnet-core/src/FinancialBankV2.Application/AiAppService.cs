@@ -2,19 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration; // Config okumak için
-using Microsoft.SemanticKernel; // Semantic Kernel kütüphanesi
-using Microsoft.SemanticKernel.ChatCompletion; // Chat özellikleri
-using Microsoft.SemanticKernel.Connectors.OpenAI; // OpenAI/Ollama bağlantısı
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using FinancialBankV2.Permissions;
 using Microsoft.AspNetCore.Authorization;
-using System.ComponentModel.DataAnnotations;
-
-
+using System.Text; // StringBuilder için gerekli
 
 namespace FinancialBankV2
 {
@@ -22,114 +19,151 @@ namespace FinancialBankV2
     public class AiAppService : ApplicationService, IAiAppService
     {
         private readonly IRepository<BankAccount, Guid> _bankAccountRepository;
+        private readonly IRepository<Transaction, Guid> _transactionRepository;
         private readonly ICurrentUser _currentUser;
 
-
-        // Ollama nın çalıştığı yerel adres (Localhost)
+        // Ayarlar
         private const string OllamaApiUrl = "http://localhost:11434/v1";
-        //Kullanacağımız model 
         private const string AiModelName = "llama3.2:latest";
 
         public AiAppService(
-            IRepository<BankAccount, Guid> bankAccountRepostory,
-            ICurrentUser currentUser
-            )
+            IRepository<BankAccount, Guid> bankAccountRepository,
+            IRepository<Transaction, Guid> transactionRepository,
+            ICurrentUser currentUser)
         {
-            _bankAccountRepository = bankAccountRepostory;
+            _bankAccountRepository = bankAccountRepository;
+            _transactionRepository = transactionRepository;
             _currentUser = currentUser;
         }
 
+        // ==================================================================================
+        // 1. ANA METOT (YÖNETİCİ KATMANI)
+        // Karmaşık mantık yok, sadece alt ekipleri yönetir.
+        // ==================================================================================
         public async Task<AiAnswerDto> AskQuestionAsync(AskQuestionDto input)
         {
-            // 1. Validations (Kontroller)
             if (!_currentUser.IsAuthenticated)
+                throw new UserFriendlyException("AI Asistanı kullanmak için lütfen giriş yapın.");
+
+            // 1. Veriyi Getir
+            var userAccounts = await _bankAccountRepository.GetListAsync(a => a.UserId == _currentUser.Id.Value);
+
+            // 2. Karar Ver (Kullanıcı ne soruyor? Hangi veriyi vermeliyim?)
+            var contextData = await BuildContextAndInstructionAsync(input.Question, userAccounts);
+
+            // 3. İşi Yap (AI'ya gönder)
+            var aiResponse = await GetResponseAsync(contextData.UserContext, contextData.SystemInstruction, input.Question);
+
+            return new AiAnswerDto { Answer = aiResponse };
+        }
+
+        // ==================================================================================
+        // 2. CONTEXT BUILDER (KARAR MEKANİZMASI)
+        // Soruyu analiz eder, veriyi hazırlar ve AI'ya ne yapacağını söyler.
+        // ==================================================================================
+        private async Task<(string UserContext, string SystemInstruction)> BuildContextAndInstructionAsync(string question, List<BankAccount> accounts)
+        {
+            // Kullanıcının hiç hesabı yoksa
+            if (!accounts.Any())
             {
-                throw new UserFriendlyException("Please log in to use the AI Assistant.");
+                return (
+                    UserContext: "Kullanıcının henüz bir banka hesabı yok.", 
+                    SystemInstruction: "Sen yardımsever bir asistansın. Kullanıcıya hesap açması için yol göster."
+                );
             }
 
-            // 2. RAG Context Building (Veri Toplama)
-            // Kullanıcı verisini veritabanından çekip hazırlıyoruz.
-            string contextData = "Kullanıcı hakkında bilgi bulunamadı.";
+            var q = question.ToLower();
 
-            var userAccounts = await _bankAccountRepository.GetListAsync(a => a.UserId == _currentUser.Id);
-
-            if (userAccounts.Any())
+            // SENARYO A: Bakiye Sorusu
+            if (q.Contains("bakiye") || q.Contains("param") || q.Contains("kadar"))
             {
-
-                var totalBalance = userAccounts.Sum(x => x.Balance);
-                var accountCount = userAccounts.Count;
-
-                contextData = $"User has {accountCount} bank accounts. Total Balance across all accounts: {totalBalance:N2} TL.";
-
+                var totalBalance = accounts.Sum(x => x.Balance);
+                return (
+                    UserContext: $"Kullanıcının Toplam Bakiyesi: {totalBalance:N2} TL",
+                    SystemInstruction: "Sen bir banka asistanısın. Kullanıcıya sadece bakiyesini söyle. Kısa, net ve resmi ol."
+                );
             }
 
+            // SENARYO B: Hesap Hareketleri
+            if (q.Contains("hareket") || q.Contains("geçmiş") || q.Contains("harcama") || q.Contains("transfer"))
+            {
+                var transactionHistory = await GetTransactionHistoryTextAsync(accounts);
+                return (
+                    UserContext: transactionHistory,
+                    SystemInstruction: "Sen bir banka asistanısın. Sana verilen işlem listesini kullanıcıya sun. Her işlemi mutlaka yeni bir satıra yaz. Okunabilir olsun."
+                );
+            }
 
-            // 3. Semantic Kernel Builder (Microsoft Standartları)
-            // HTTP Client yerine Kernel oluşturuyoruz.
-            var builder = Kernel.CreateBuilder();
-
-            // Ollama aslında OpenAI uyumlu bir API sunar. Semantic Kernel'in OpenAI konektörünü kullanacağız.
-            // ÖNEMLİ: Ollama için API Key gerekmez ama parametre boş geçilemez, rastgele bir şey yazıyoruz.
-
-            builder.AddOpenAIChatCompletion(
-              modelId: AiModelName,
-              apiKey: "Ollama",
-              endpoint: new Uri(OllamaApiUrl)
+            // SENARYO C: Genel Sohbet (Merhaba, Nasılsın vb.)
+            return (
+                UserContext: $"Kullanıcı giriş yapmış durumda. Toplam {accounts.Count} adet hesabı var.",
+                SystemInstruction: "Sen FinancialBankV2'nin yapay zeka asistanısın. Kullanıcıyla nazikçe sohbet et ve bankacılık işlemlerinde yardımcı olabileceğini belirt."
             );
-            var kernel = builder.Build();
-            var ChatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-            // 4. Prompt Engineering (Sistem Ayarları)
-            // AI'ya karakterini ve kurallarını burada veriyoruz.
-            var history = new ChatHistory();
+        }
 
+        // ==================================================================================
+        // 3. VERİ FORMATLAMA (AMELELİK KATMANI)
+        // Veritabanından gelen listeyi güzel bir string metne çevirir.
+        // ==================================================================================
+        private async Task<string> GetTransactionHistoryTextAsync(List<BankAccount> accounts)
+        {
+            var accountIds = accounts.Select(x => x.Id).ToList();
+            
+            var transactions = await _transactionRepository.GetListAsync(t =>
+                accountIds.Contains(t.SenderAccountId) || accountIds.Contains(t.ReceiverAccountId));
 
-            // System Prompt: Yapay zekanın "kişiliği" ve kuralları burada belirlenir.
-            history.AddSystemMessage($@"
-                You are a helpful and professional AI Assistant for 'FinancialBankV2'.
-                Your goal is to answer user questions about their bank accounts based ONLY on the provided context.
-                
-                RULES:
-                1. Always answer in clear, grammatically correct TURKISH language.
-                2. Do not hallucinate. If you don't know, say 'Bilgim yok'.
-                3. Be concise and polite.
-                4. Never mention 'Parsel' or unrelated words.
-                
-                CONTEXT:
-                {contextData}
-            ");
-            // User Message: Kullanıcının sorusu
-            history.AddUserMessage(input.Question);
+            var lastTransactions = transactions.OrderByDescending(t => t.TransactionDate).Take(5).ToList();
 
-            // 5. AI Response Generation (Cevap Üretme)
-            var executionSettings = new OpenAIPromptExecutionSettings
+            if (!lastTransactions.Any()) 
+                return "Hiç işlem bulunamadı.";
+
+            var sb = new StringBuilder("Son 5 İşlem Listesi:\n");
+            
+            foreach (var tx in lastTransactions)
             {
-                MaxTokens = 100,// Kısa cevap istiyoruz.
+                bool isExpense = accountIds.Contains(tx.SenderAccountId);
+                string symbol = isExpense ? "(-)" : "(+)";
+                sb.AppendLine($"{symbol} {tx.Amount:N2} TL | {tx.TransactionDate:dd.MM HH:mm}");
+            }
 
-                Temperature = 0.1,// 0'a yakın olması "yaratıcılığı" öldürür, sadece gerçeği söyletir.
+            return sb.ToString();
+        }
 
-            };
-
+        // ==================================================================================
+        // 4. AI ENGINE (TEKNİK KATMAN)
+        // Sadece Semantic Kernel ve Ollama bağlantısını yönetir.
+        // ==================================================================================
+        private async Task<string> GetResponseAsync(string userContext, string systemInstruction, string userQuestion)
+        {
             try
             {
-                var response = await ChatCompletionService.GetChatMessageContentAsync(
-                    history,
-                    executionSettings,
+                var builder = Kernel.CreateBuilder();
+                builder.AddOpenAIChatCompletion(modelId: AiModelName, apiKey: "Ollama", endpoint: new Uri(OllamaApiUrl));
+                
+                var kernel = builder.Build();
+                var chatService = kernel.GetRequiredService<IChatCompletionService>();
+                
+                var history = new ChatHistory();
+                history.AddSystemMessage($@"
+                    You are a helpful AI Assistant.
+                    RULES: Answer in clear TURKISH. Do not hallucinate. Be concise.
+                    INSTRUCTIONS: {systemInstruction}
+                    DATA: {userContext}");
+                
+                history.AddUserMessage(userQuestion);
+
+                var response = await chatService.GetChatMessageContentAsync(
+                    history, 
+                    new OpenAIPromptExecutionSettings { MaxTokens = 250, Temperature = 0.1 }, 
                     kernel: kernel
                 );
 
-                return new AiAnswerDto
-                {
-                    Answer = response.Content ?? "I couldn't generate a response."
-                };
-
+                return response.Content ?? "Bir yanıt oluşturamadım.";
             }
             catch (Exception ex)
             {
-                // Hata durumunda kullanıcıya bilgi veriyoruz.
-                throw new UserFriendlyException($"AI Service Error: {ex.Message}");
+                throw new UserFriendlyException($"AI Servisi şu an yanıt veremiyor. (Hata: {ex.Message})");
             }
-
         }
-
     }
 }
