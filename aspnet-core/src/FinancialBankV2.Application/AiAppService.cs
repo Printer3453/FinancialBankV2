@@ -49,10 +49,10 @@ namespace FinancialBankV2
             var userAccounts = await _bankAccountRepository.GetListAsync(a => a.UserId == _currentUser.Id.Value);
 
             // 2. Karar Ver (Kullanıcı ne soruyor? Hangi veriyi vermeliyim?)
-            var contextData = await BuildContextAndInstructionAsync(input.Question, userAccounts);
-
+            var contextData = await AnalyzeAndPrepareContextAsync(input.Question, userAccounts);
+            var addSystemMessage = $" {contextData.SystemInstruction} \n\n=== KULLANICI FİNANSAL VERİLERİ ===\n {contextData.UserContext}";
             // 3. İşi Yap (AI'ya gönder)
-            var aiResponse = await GetResponseAsync(contextData.UserContext, contextData.SystemInstruction, input.Question);
+            var aiResponse = await GetResponseAsync(addSystemMessage, input.Question);
 
             return new AiAnswerDto { Answer = aiResponse };
         }
@@ -61,45 +61,69 @@ namespace FinancialBankV2
         // 2. CONTEXT BUILDER (KARAR MEKANİZMASI)
         // Soruyu analiz eder, veriyi hazırlar ve AI'ya ne yapacağını söyler.
         // ==================================================================================
-        private async Task<(string UserContext, string SystemInstruction)> BuildContextAndInstructionAsync(string question, List<BankAccount> accounts)
+        private async Task<(string UserContext, string SystemInstruction)> AnalyzeAndPrepareContextAsync(string question, List<BankAccount> accounts)
         {
-            // Kullanıcının hiç hesabı yoksa
+                string prompt = @"
+                GÖREVİN: Aşağıdaki 'KULLANICI VERİSİ' bölümünde yazan işlem listesini oku ve kullanıcıya raporla.
+                KURAL 1: ASLA 'menüye tıklayın', 'şuraya gidin' gibi yönlendirmeler yapma.
+                KURAL 2: Sadece sana verilen veriyi konuş. Veri yoksa 'Listelenecek işlem yok' de.
+                KURAL 3: Hayali işlemler uydurma.
+                KURAL 4: Cevabın kısa, net ve resmi olsun.
+                KURAL 5: Kullanıcının kullandığı dili Türkçe ise Türkçe, İngilizce ise İngilizce cevap ver.
+                ";
             if (!accounts.Any())
             {
                 return (
-                    UserContext: "Kullanıcının henüz bir banka hesabı yok.", 
+                    UserContext: "Kullanıcının henüz bir banka hesabı yok.",
                     SystemInstruction: "Sen yardımsever bir asistansın. Kullanıcıya hesap açması için yol göster."
                 );
             }
 
-            var q = question.ToLower();
+            string systemMessage = @"
+        Sen bir sınıflandırma asistanısın.
+        Görevin: Kullanıcının sorusunu analiz et ve aşağıdaki etiketlerden sadece birini cevap olarak dön.
+        Etiketler:
+        [BAKIYE] -> Para durumu, hesap özeti, ne kadar param var soruları.
+        [ISLEM] -> Harcamalar, gelen giden para, geçmiş hareketler.
+        [SOHBET] -> Selamlaşma, genel sorular.
+        
+        KURAL: Sadece etiketi yaz. Başka hiçbir kelime etme.";
 
-            // SENARYO A: Bakiye Sorusu
-            if (q.Contains("bakiye") || q.Contains("param") || q.Contains("kadar"))
+            var intention = await GetResponseAsync(systemMessage, question);
+            var intentionCleaned = intention.ToString().Trim().ToUpper();
+
+            if (intentionCleaned.Contains("BAKIYE"))
             {
                 var totalBalance = accounts.Sum(x => x.Balance);
                 return (
                     UserContext: $"Kullanıcının Toplam Bakiyesi: {totalBalance:N2} TL",
-                    SystemInstruction: "Sen bir banka asistanısın. Kullanıcıya sadece bakiyesini söyle. Kısa, net ve resmi ol."
+                    SystemInstruction: prompt + "\n\n" + " Sen bir banka asistanısın. Kullanıcıya sadece bakiyesini söyle. Kısa, net ve resmi ol."
                 );
+
             }
 
-            // SENARYO B: Hesap Hareketleri
-            if (q.Contains("hareket") || q.Contains("geçmiş") || q.Contains("harcama") || q.Contains("transfer"))
+            else if (intentionCleaned.Contains("ISLEM"))
             {
                 var transactionHistory = await GetTransactionHistoryTextAsync(accounts);
                 return (
                     UserContext: transactionHistory,
-                    SystemInstruction: "Sen bir banka asistanısın. Sana verilen işlem listesini kullanıcıya sun. Her işlemi mutlaka yeni bir satıra yaz. Okunabilir olsun."
+                    SystemInstruction : prompt + "\n\n" + "Sen bir banka asistanısın. Sana verilen işlem listesini kullanıcıya sun. Her işlemi mutlaka yeni bir satıra yaz. Okunabilir olsun."
                 );
+
             }
 
-            // SENARYO C: Genel Sohbet (Merhaba, Nasılsın vb.)
-            return (
-                UserContext: $"Kullanıcı giriş yapmış durumda. Toplam {accounts.Count} adet hesabı var.",
-                SystemInstruction: "Sen FinancialBankV2'nin yapay zeka asistanısın. Kullanıcıyla nazikçe sohbet et ve bankacılık işlemlerinde yardımcı olabileceğini belirt."
-            );
+
+            else
+            {
+                return (
+                    UserContext: $"Kullanıcı giriş yapmış durumda. Toplam {accounts.Count} adet hesabı var.",
+                    SystemInstruction: prompt + "Sen FinancialBankV2'nin yapay zeka asistanısın. Kullanıcıyla nazikçe sohbet et ve bankacılık işlemlerinde yardımcı olabileceğini belirt."
+                );
+            }
         }
+
+
+        
 
         // ==================================================================================
         // 3. VERİ FORMATLAMA (AMELELİK KATMANI)
@@ -108,17 +132,17 @@ namespace FinancialBankV2
         private async Task<string> GetTransactionHistoryTextAsync(List<BankAccount> accounts)
         {
             var accountIds = accounts.Select(x => x.Id).ToList();
-            
+
             var transactions = await _transactionRepository.GetListAsync(t =>
                 accountIds.Contains(t.SenderAccountId) || accountIds.Contains(t.ReceiverAccountId));
 
             var lastTransactions = transactions.OrderByDescending(t => t.TransactionDate).Take(5).ToList();
 
-            if (!lastTransactions.Any()) 
+            if (!lastTransactions.Any())
                 return "Hiç işlem bulunamadı.";
 
             var sb = new StringBuilder("Son 5 İşlem Listesi:\n");
-            
+
             foreach (var tx in lastTransactions)
             {
                 bool isExpense = accountIds.Contains(tx.SenderAccountId);
@@ -133,28 +157,25 @@ namespace FinancialBankV2
         // 4. AI ENGINE (TEKNİK KATMAN)
         // Sadece Semantic Kernel ve Ollama bağlantısını yönetir.
         // ==================================================================================
-        private async Task<string> GetResponseAsync(string userContext, string systemInstruction, string userQuestion)
+        private async Task<string> GetResponseAsync(string addSystemMessage, string userQuestion)
         {
             try
             {
+
                 var builder = Kernel.CreateBuilder();
                 builder.AddOpenAIChatCompletion(modelId: AiModelName, apiKey: "Ollama", endpoint: new Uri(OllamaApiUrl));
-                
+
                 var kernel = builder.Build();
                 var chatService = kernel.GetRequiredService<IChatCompletionService>();
-                
+
                 var history = new ChatHistory();
-                history.AddSystemMessage($@"
-                    You are a helpful AI Assistant.
-                    RULES: Answer in clear TURKISH. Do not hallucinate. Be concise.
-                    INSTRUCTIONS: {systemInstruction}
-                    DATA: {userContext}");
-                
+                history.AddSystemMessage(addSystemMessage);
+
                 history.AddUserMessage(userQuestion);
 
                 var response = await chatService.GetChatMessageContentAsync(
-                    history, 
-                    new OpenAIPromptExecutionSettings { MaxTokens = 250, Temperature = 0.1 }, 
+                    history,
+                    new OpenAIPromptExecutionSettings { MaxTokens = 250, Temperature = 0.1 },
                     kernel: kernel
                 );
 
