@@ -10,5 +10,13 @@ namespace FinancialBankV2
         public Guid UserId { get; set; } // Bu hesabın sahibi olan kullanıcının ID'si
         public string AccountNumber { get; set; } = string.Empty;// Banka Hesap Numarası (IBAN gibi)
         public decimal Balance { get; set; } // Hesaptaki Bakiye
+
+        // Boş constructor (EF Core için lazım)
+    protected BankAccount() { }
+
+    // ID alan constructor (Test için lazım)
+    public BankAccount(Guid id) : base(id)
+    {
+    }
     }
 }

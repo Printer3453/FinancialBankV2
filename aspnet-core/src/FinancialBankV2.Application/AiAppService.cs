@@ -163,7 +163,10 @@ namespace FinancialBankV2
             {
 
                 var builder = Kernel.CreateBuilder();
-                builder.AddOpenAIChatCompletion(modelId: AiModelName, apiKey: "Ollama", endpoint: new Uri(OllamaApiUrl));
+                builder.AddOpenAIChatCompletion(
+                    modelId: AiModelName, 
+                    apiKey: "Ollama", 
+                    endpoint: new Uri(OllamaApiUrl));
 
                 var kernel = builder.Build();
                 var chatService = kernel.GetRequiredService<IChatCompletionService>();
